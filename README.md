@@ -1,6 +1,7 @@
 # Laboratorio: Sistema Solar con Shaders
 Video de ejecución: https://drive.google.com/file/d/1s8auqlRXH2Lu00fiOQt3tHPX_D85ZPUa/view?usp=sharing
 
+<img width="1177" height="779" alt="Image" src="https://github.com/user-attachments/assets/61e019a8-a49e-4315-b62c-b46e0bfda8ca" />
 Este proyecto implementa un software renderer en Rust que crea cuerpos celestes utilizando únicamente shaders de fragmentos (sin texturas ni materiales). El objetivo es demostrar la creatividad y complejidad en el diseño de shaders para crear planetas y estrellas visualmente interesantes.
 
 ## Características Implementadas

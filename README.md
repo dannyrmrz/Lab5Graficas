@@ -156,8 +156,5 @@ El sistema usa interpolación barycéntrica para:
 
 ## Autor
 
-[Tu nombre aquí]
+Daniela Ramírez de León
 
-## Licencia
-
-[Especificar licencia si es necesario]

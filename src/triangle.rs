@@ -27,11 +27,33 @@ pub fn triangle_with_shader(v1: &Vertex, v2: &Vertex, v3: &Vertex, fragment_shad
 
   let (min_x, min_y, max_x, max_y) = calculate_bounding_box(&a, &b, &c);
 
-  let triangle_area = edge_function(&a, &b, &c);
+  // Clamp bounding box to screen bounds to avoid rendering off-screen
+  // We'll use reasonable screen bounds (assuming max 2000x2000 for safety)
+  let screen_max_x = 2000i32;
+  let screen_max_y = 2000i32;
+  let screen_min_x = -100i32;
+  let screen_min_y = -100i32;
+  
+  let clamped_min_x = min_x.max(screen_min_x);
+  let clamped_min_y = min_y.max(screen_min_y);
+  let clamped_max_x = max_x.min(screen_max_x);
+  let clamped_max_y = max_y.min(screen_max_y);
+  
+  // Skip if triangle is completely outside screen
+  if clamped_min_x > clamped_max_x || clamped_min_y > clamped_max_y {
+    return fragments;
+  }
 
-  // Iterate over each pixel in the bounding box
-  for y in min_y..=max_y {
-    for x in min_x..=max_x {
+  let triangle_area = edge_function(&a, &b, &c);
+  
+  // Skip if triangle area is too small or invalid
+  if triangle_area.abs() < 0.0001 {
+    return fragments;
+  }
+
+  // Iterate over each pixel in the clamped bounding box
+  for y in clamped_min_y..=clamped_max_y {
+    for x in clamped_min_x..=clamped_max_x {
       let point = Vec3::new(x as f32 + 0.5, y as f32 + 0.5, 0.0);
 
       // Calculate barycentric coordinates
@@ -76,10 +98,19 @@ pub fn triangle_with_shader(v1: &Vertex, v2: &Vertex, v3: &Vertex, fragment_shad
 }
 
 fn calculate_bounding_box(v1: &Vec3, v2: &Vec3, v3: &Vec3) -> (i32, i32, i32, i32) {
-    let min_x = v1.x.min(v2.x).min(v3.x).floor() as i32;
-    let min_y = v1.y.min(v2.y).min(v3.y).floor() as i32;
-    let max_x = v1.x.max(v2.x).max(v3.x).ceil() as i32;
-    let max_y = v1.y.max(v2.y).max(v3.y).ceil() as i32;
+    // Clamp coordinates to reasonable range to avoid generating too many fragments
+    let clamp_coord = |x: f32| x.clamp(-10000.0, 20000.0);
+    let v1_x = clamp_coord(v1.x);
+    let v1_y = clamp_coord(v1.y);
+    let v2_x = clamp_coord(v2.x);
+    let v2_y = clamp_coord(v2.y);
+    let v3_x = clamp_coord(v3.x);
+    let v3_y = clamp_coord(v3.y);
+    
+    let min_x = v1_x.min(v2_x).min(v3_x).floor() as i32;
+    let min_y = v1_y.min(v2_y).min(v3_y).floor() as i32;
+    let max_x = v1_x.max(v2_x).max(v3_x).ceil() as i32;
+    let max_y = v1_y.max(v2_y).max(v3_y).ceil() as i32;
 
     (min_x, min_y, max_x, max_y)
 }

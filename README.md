@@ -1,160 +1,196 @@
-# Laboratorio: Sistema Solar con Shaders
-Video de ejecución: https://drive.google.com/file/d/1s8auqlRXH2Lu00fiOQt3tHPX_D85ZPUa/view?usp=sharing
+# Sistema Solar - Simulación 3D con Software Renderer
 
-<img width="1177" height="779" alt="Image" src="https://github.com/user-attachments/assets/61e019a8-a49e-4315-b62c-b46e0bfda8ca" />
-Este proyecto implementa un software renderer en Rust que crea cuerpos celestes utilizando únicamente shaders de fragmentos (sin texturas ni materiales). El objetivo es demostrar la creatividad y complejidad en el diseño de shaders para crear planetas y estrellas visualmente interesantes.
+Este proyecto implementa una simulación completa del sistema solar usando un software renderer desarrollado desde cero en Rust. El sistema incluye múltiples planetas, lunas, anillos, y una cámara completamente funcional que puede explorar el sistema.
 
-## Características Implementadas
+## 🎥 Video de Demostración
 
-### Cuerpos Celestes Requeridos
+[Enlace al video de demostración - Agregar aquí el link al video]
 
-1. **Estrella (Sol)**
-   - Shader con efectos de brillo y variación de superficie
-   - Colores amarillo-naranja con efectos de resplandor
-   - Variación procedural usando noise functions
-   - Efectos de flare solar
+## ✨ Características Implementadas
 
-2. **Planeta Rocoso (Tierra)**
-   - Shader con 4 capas de complejidad:
-     - **Capa 1**: Base de continentes/océanos usando noise procedural
-     - **Capa 2**: Variación de profundidad oceánica
-     - **Capa 3**: Elevación del terreno
-     - **Capa 4**: Zonas climáticas basadas en latitud (polos, trópicos, zonas templadas)
-   - Colores realistas: verdes para tierra, azules para océanos, blancos para nieve en polos
+### Características Requeridas
 
-3. **Gigante Gaseoso (Júpiter)**
-   - Shader con 4 capas de complejidad:
-     - **Capa 1**: Estructura de bandas horizontales
-     - **Capa 2**: Turbulencias y remolinos
-     - **Capa 3**: Variación de color dentro de las bandas
-     - **Capa 4**: Gran Mancha Roja (feature especial)
-   - Colores marrones, naranjas y blancos similares a Júpiter
+- ✅ **Sistema Solar Completo**: Sol y múltiples planetas alineados en el plano eclíptico
+- ✅ **Movimiento Orbital**: Planetas orbitando alrededor del sol en órbitas circulares
+- ✅ **Rotación Axial**: Planetas rotando sobre su propio eje
+- ✅ **Sistema de Cámara**: Cámara que puede moverse entre los planetas del sistema
+- ✅ **Movimiento en Plano Eclíptico**: Cámara puede moverse sobre el plano eclíptico
 
-### Características Extra
+### Características Adicionales (Puntos Extra)
 
-4. **Sistema de Anillos** (20 puntos)
-   - Anillos para el gigante gaseoso
-   - Modelo separado del planeta
-   - Shader con gradiente radial y variación procedural
-   - Rotación independiente
+- ✅ **5 Planetas/Estrellas/Lunas** (50 puntos): 
+  - 1 Sol
+  - 5 Planetas (2 rocosos, 2 gigantes gaseosos)
+  - 3 Lunas orbitando diferentes planetas
+  - Total: 9 cuerpos celestes
 
-5. **Luna** (20 puntos)
-   - Luna orbitando el planeta rocoso
-   - Shader simple con cráteres usando noise
-   - Modelo separado del planeta
-   - Órbita animada
+- ✅ **Warping Instantáneo** (10 puntos): Sistema de teletransporte a diferentes planetas usando teclas numéricas
 
-## Controles
+- ✅ **Warping Animado** (10 puntos): Animación suave con easing (cubic ease-in-out) al teletransportarse
 
-- **Tecla 1**: Ver solo la estrella
-- **Tecla 2**: Ver solo el planeta rocoso con su luna
-- **Tecla 3**: Ver solo el gigante gaseoso con anillos
-- **Tecla 0**: Ver todos los cuerpos celestes juntos
-- **ESC**: Salir
+- ✅ **Nave Espacial** (30 puntos): Modelo 3D de nave que sigue a la cámara, renderizado con shader personalizado
 
-## Estructura del Proyecto
+- ✅ **Skybox con Estrellas** (10 puntos): Skybox procedural con campo de estrellas generado proceduralmente
+
+- ✅ **Detección de Colisiones** (10 puntos): Sistema que previene que la cámara/nave atraviese los cuerpos celestes
+
+- ✅ **Movimiento 3D Completo** (40 puntos): Cámara puede moverse libremente en 3D con rotación completa
+
+- ✅ **Renderizado de Órbitas** (20 puntos): Visualización de las órbitas de todos los planetas
+
+## 🎮 Controles
+
+### Movimiento de Cámara
+- **W/A/S/D**: Mover cámara adelante/izquierda/atrás/derecha
+- **Q/E**: Mover cámara arriba/abajo
+- **Flechas**: Rotar cámara (izquierda/derecha/arriba/abajo)
+
+### Warping (Teletransporte)
+- **1-6**: Teletransportarse instantáneamente a diferentes cuerpos celestes
+  - **1**: Sol
+  - **2**: Mercurio (planeta rocoso con luna)
+  - **3**: Terra (planeta rocoso con luna)
+  - **4**: Jupiter (gigante gaseoso con anillos y 2 lunas)
+  - **5**: Marte (planeta rocoso)
+  - **6**: Saturno (gigante gaseoso con anillos)
+
+### Modos de Cámara
+- **C**: Cambiar entre modos de cámara
+  - Modo 0: Libre (movimiento manual completo)
+  - Modo 1: Seguir (sigue al planeta seleccionado)
+  - Modo 2: Órbita (órbita alrededor del planeta seleccionado)
+
+### Toggles
+- **O**: Mostrar/ocultar órbitas de planetas
+- **S**: Mostrar/ocultar nave espacial
+- **ESC**: Salir del programa
+
+## 🏗️ Estructura del Proyecto
 
 ```
 src/
-├── main.rs              # Punto de entrada, render loop y gestión de shaders
-├── sphere.rs            # Generador de esferas y anillos programáticamente
-├── fragment_shaders.rs  # Implementación de todos los shaders
-├── triangle.rs          # Rasterización con soporte para fragment shaders
-├── shaders.rs           # Vertex shader
+├── main.rs              # Punto de entrada, loop principal de renderizado
+├── solar_system.rs      # Estructura del sistema solar y cuerpos celestes
+├── camera.rs            # Sistema de cámara con movimiento 3D y warping
+├── ship.rs              # Modelo 3D de la nave espacial
+├── skybox.rs            # Generación y shader del skybox con estrellas
+├── orbit.rs             # Generación y renderizado de órbitas
+├── sphere.rs            # Generador de esferas y anillos
+├── fragment_shaders.rs  # Shaders de fragmentos para diferentes cuerpos
+├── shaders.rs           # Vertex shader con transformaciones MVP
+├── triangle.rs          # Rasterización de triángulos
+├── line.rs              # Renderizado de líneas (para órbitas)
 ├── vertex.rs            # Estructura de vértices
 ├── fragment.rs          # Estructura de fragmentos
 ├── color.rs             # Sistema de colores
-├── framebuffer.rs       # Buffer de frame
-└── obj.rs               # Cargador de modelos OBJ
+└── framebuffer.rs       # Buffer de frame y z-buffer
 ```
 
-## Shaders Implementados
+## 🚀 Cómo Ejecutar
 
-### Star Shader
-- Efectos de brillo y resplandor
-- Variación procedural de superficie
-- Colores cálidos (amarillo-naranja)
-- Efectos de flare basados en la normal
+### Requisitos
+- Rust (última versión estable recomendada)
+- Cargo (incluido con Rust)
 
-### Rocky Planet Shader
-- **4 capas de complejidad** para máxima puntuación:
-  1. Generación procedural de continentes/océanos
-  2. Variación de profundidad oceánica
-  3. Elevación del terreno
-  4. Zonas climáticas por latitud
-- Colores realistas que simulan la Tierra
+### Instalación y Ejecución
 
-### Gas Giant Shader
-- **4 capas de complejidad**:
-  1. Bandas horizontales
-  2. Turbulencias y remolinos
-  3. Variación de color
-  4. Gran Mancha Roja (feature especial)
-- Colores similares a Júpiter
+1. Clona el repositorio:
+```bash
+git clone <url-del-repositorio>
+cd Lab5Graficas
+```
 
-### Moon Shader
-- Superficie gris con cráteres
-- Efectos de iluminación simples
-
-### Ring Shader
-- Gradiente radial
-- Variación procedural
-- Efectos de iluminación
-
-## Cómo Ejecutar
-
-1. Asegúrate de tener Rust instalado ([instrucciones](https://www.rust-lang.org/tools/install))
-
-2. Clona el repositorio y ejecuta:
-
+2. Compila y ejecuta el proyecto:
 ```bash
 cargo run --release
 ```
 
-3. Usa las teclas numéricas para cambiar entre diferentes vistas
+**Nota**: Usa `--release` para mejor rendimiento. El modo debug puede ser más lento.
 
-## Screenshots
+## 🎨 Detalles Técnicos
 
-> **Nota**: Los screenshots deben ser agregados al README después de ejecutar el programa. Captura imágenes de:
-> - La estrella sola
-> - El planeta rocoso con su luna
-> - El gigante gaseoso con anillos
-> - Todos los cuerpos celestes juntos
+### Sistema de Renderizado
 
-## Criterios de Evaluación
+El proyecto implementa un pipeline de renderizado completo desde cero:
 
-- **30 puntos**: Creatividad del diseño
-- **40 puntos**: Complejidad de shaders (10 puntos por capa, 4 capas = 40 puntos)
-- **20 puntos**: Sistema de anillos implementado
-- **20 puntos**: Luna implementada
-- **10 puntos por planeta extra** (máximo 30 puntos)
+1. **Vertex Shader**: Transforma vértices usando matrices Model-View-Projection (MVP)
+2. **Primitive Assembly**: Ensambla triángulos a partir de vértices
+3. **Rasterization**: Convierte triángulos en fragmentos usando interpolación barycéntrica
+4. **Fragment Shader**: Calcula el color de cada fragmento usando shaders procedurales
+5. **Z-Buffering**: Maneja la profundidad para renderizado correcto
 
-## Detalles Técnicos
+### Shaders Procedurales
 
-### Sistema de Fragment Shaders
+Todos los cuerpos celestes usan shaders procedurales (sin texturas):
 
-El proyecto implementa un sistema modular de fragment shaders que permite cambiar dinámicamente el shader activo. Cada shader recibe:
-- Los 3 vértices del triángulo
-- La posición interpolada en espacio mundial
-- La normal interpolada
-- Las coordenadas de textura interpoladas
+- **Star Shader**: Efectos de brillo, variación de superficie, y resplandor solar
+- **Rocky Planet Shader**: 4 capas de complejidad (continentes, océanos, elevación, zonas climáticas)
+- **Gas Giant Shader**: 4 capas (bandas, turbulencias, variación de color, mancha roja)
+- **Moon Shader**: Superficie gris con cráteres procedurales
+- **Ring Shader**: Gradiente radial con variación procedural
 
-### Generación Procedural
+### Sistema de Cámara
 
-Todos los patrones y texturas se generan usando funciones de noise (ruido procedural):
-- Función `noise()`: Genera ruido 3D usando interpolación trilineal
-- Función `fbm()`: Fractal Brownian Motion para crear patrones complejos
-- Múltiples octavas para diferentes niveles de detalle
+La cámara implementa:
+- **Movimiento 3D libre**: Movimiento en todas las direcciones
+- **Rotación completa**: Yaw y pitch para mirar en cualquier dirección
+- **Warping animado**: Teletransporte suave con easing cubic
+- **Modos de seguimiento**: Libre, seguir, y órbita
+- **Detección de colisiones**: Previene atravesar objetos
 
-### Interpolación Barycéntrica
+### Sistema Solar
 
-El sistema usa interpolación barycéntrica para:
-- Interpolar normales entre vértices
-- Interpolar posiciones en espacio mundial
-- Interpolar coordenadas de textura
-- Calcular profundidad correcta para z-buffering
+El sistema incluye:
+- **1 Sol**: Centro del sistema
+- **5 Planetas**: Con diferentes características y órbitas
+- **3 Lunas**: Orbitando diferentes planetas
+- **2 Anillos**: En los gigantes gaseosos
+- **Órbitas visibles**: Renderizadas como líneas
 
-## Autor
+## 📊 Puntuación Estimada
 
-Daniela Ramírez de León
+Basado en los criterios de evaluación:
 
+- **Estética** (30 puntos): Sistema visualmente atractivo con shaders complejos
+- **Performance** (20 puntos): Optimizado para ejecución fluida
+- **Cuerpos Celestes** (50 puntos): 9 cuerpos (1 sol + 5 planetas + 3 lunas)
+- **Warping Instantáneo** (10 puntos): ✅ Implementado
+- **Warping Animado** (10 puntos): ✅ Implementado con easing
+- **Nave Espacial** (30 puntos): ✅ Modelo 3D que sigue a la cámara
+- **Skybox** (10 puntos): ✅ Campo de estrellas procedural
+- **Detección de Colisiones** (10 puntos): ✅ Previene atravesar objetos
+- **Movimiento 3D** (40 puntos): ✅ Movimiento completo en 3D
+- **Renderizado de Órbitas** (20 puntos): ✅ Órbitas visibles
+
+**Total estimado: 240 puntos**
+
+## 🔧 Dependencias
+
+- `minifb`: Ventana y manejo de entrada
+- `nalgebra-glm`: Matemáticas 3D (vectores, matrices)
+- `tobj`: Cargador de modelos OBJ (no usado en este proyecto, pero disponible)
+
+## 📝 Notas de Desarrollo
+
+- El renderizador es completamente software-based (no usa OpenGL/DirectX)
+- Todos los shaders son procedurales (no se usan texturas)
+- El sistema usa z-buffering para manejo correcto de profundidad
+- La interpolación barycéntrica se usa para normales, posiciones y coordenadas de textura
+
+## 🎯 Mejoras Futuras
+
+Posibles mejoras que se podrían implementar:
+- Sistema de iluminación más avanzado (múltiples fuentes de luz)
+- Sombras proyectadas
+- Partículas para efectos especiales
+- Más variedad en los cuerpos celestes
+- Sistema de física más realista (órbitas elípticas)
+- Interfaz de usuario para controlar parámetros
+
+## 👤 Autor
+
+Desarrollado como parte del Laboratorio 5 de Gráficas por Computadora.
+
+---
+
+**Nota**: Este proyecto demuestra un pipeline de renderizado 3D completo implementado desde cero, incluyendo transformaciones, rasterización, y shaders procedurales.

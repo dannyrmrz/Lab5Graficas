@@ -260,8 +260,31 @@ pub fn moon_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, position: Vec3, nor
     Color::from_float(final_gray, final_gray, final_gray)
 }
 
+// Ship Shader (metallic blue-gray)
+pub fn ship_shader_metallic(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, _position: Vec3, normal: Vec3, _tex_coords: Vec2) -> Color {
+    // Light direction (towards sun at origin)
+    let light_dir = Vec3::new(0.0, 0.0, -1.0).normalize();
+    
+    // Diffuse lighting
+    let intensity = dot(&normal, &light_dir).max(0.0);
+    
+    // Metallic blue-gray color
+    let base_color = Vec3::new(0.4, 0.5, 0.7);
+    let highlight = Vec3::new(0.6, 0.7, 0.9);
+    
+    // Mix base and highlight based on lighting
+    let brightness = intensity * 0.8 + 0.2;
+    let color = base_color * (1.0 - intensity * 0.3) + highlight * (intensity * 0.3);
+    
+    Color::from_float(
+        (color.x * brightness).clamp(0.0, 1.0),
+        (color.y * brightness).clamp(0.0, 1.0),
+        (color.z * brightness).clamp(0.0, 1.0)
+    )
+}
+
 // Ring Shader (simple gradient)
-pub fn ring_shader(v1: &Vertex, v2: &Vertex, v3: &Vertex, position: Vec3, normal: Vec3, tex_coords: Vec2) -> Color {
+pub fn ring_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, position: Vec3, normal: Vec3, tex_coords: Vec2) -> Color {
     let light_dir = Vec3::new(0.0, 0.0, -1.0);
     let intensity = dot(&normal, &light_dir).max(0.0);
     

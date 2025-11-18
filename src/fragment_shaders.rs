@@ -1,6 +1,6 @@
-use nalgebra_glm::{Vec2, Vec3, dot};
 use crate::color::Color;
 use crate::vertex::Vertex;
+use nalgebra_glm::{dot, Vec2, Vec3};
 
 pub type FragmentShader = fn(&Vertex, &Vertex, &Vertex, Vec3, Vec3, Vec3, Vec2) -> Color;
 
@@ -23,14 +23,14 @@ fn smoothstep(edge0: f32, edge1: f32, x: f32) -> f32 {
 fn noise(p: Vec3) -> f32 {
     let i = Vec3::new(p.x.floor(), p.y.floor(), p.z.floor());
     let f = Vec3::new(p.x - i.x, p.y - i.y, p.z - i.z);
-    
+
     // Smooth interpolation
     let u = Vec3::new(
         smoothstep(0.0, 1.0, f.x),
         smoothstep(0.0, 1.0, f.y),
-        smoothstep(0.0, 1.0, f.z)
+        smoothstep(0.0, 1.0, f.z),
     );
-    
+
     // Hash values at corners
     let a = hash_vec3(i);
     let b = hash_vec3(Vec3::new(i.x + 1.0, i.y, i.z));
@@ -40,16 +40,16 @@ fn noise(p: Vec3) -> f32 {
     let f_val = hash_vec3(Vec3::new(i.x + 1.0, i.y, i.z + 1.0));
     let g = hash_vec3(Vec3::new(i.x, i.y + 1.0, i.z + 1.0));
     let h = hash_vec3(Vec3::new(i.x + 1.0, i.y + 1.0, i.z + 1.0));
-    
+
     // Trilinear interpolation
     let x1 = a + (b - a) * u.x;
     let x2 = c + (d - c) * u.x;
     let y1 = x1 + (x2 - x1) * u.y;
-    
+
     let x3 = e + (f_val - e) * u.x;
     let x4 = g + (h - g) * u.x;
     let y2 = x3 + (x4 - x3) * u.y;
-    
+
     y1 + (y2 - y1) * u.z
 }
 
@@ -57,18 +57,26 @@ fn fbm(p: Vec3, octaves: u32) -> f32 {
     let mut value = 0.0;
     let mut amplitude = 0.5;
     let mut frequency = 1.0;
-    
+
     for _ in 0..octaves {
         value += amplitude * noise(Vec3::new(p.x * frequency, p.y * frequency, p.z * frequency));
         amplitude *= 0.5;
         frequency *= 2.0;
     }
-    
+
     value
 }
 
 // Star/Sun Shader
-pub fn star_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, _world_position: Vec3, normal: Vec3, _tex_coords: Vec2) -> Color {
+pub fn star_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    model_position: Vec3,
+    _world_position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
     let normal = if normal.magnitude_squared() > 0.0 {
         normal.normalize()
     } else {
@@ -86,7 +94,8 @@ pub fn star_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec
     let variation = 0.1 * noise_value;
 
     // Add bright center effect (towards local Y axis for visual interest)
-    let center_dist = (model_position.x * model_position.x + model_position.y * model_position.y).sqrt();
+    let center_dist =
+        (model_position.x * model_position.x + model_position.y * model_position.y).sqrt();
     let center_glow = (1.0 - center_dist.min(1.0)).powf(2.0) * 0.3;
 
     // Add solar flare effect based on the eye-facing component
@@ -104,7 +113,15 @@ pub fn star_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec
 }
 
 // Rocky Planet Shader (Earth-like)
-pub fn rocky_planet_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, world_position: Vec3, normal: Vec3, _tex_coords: Vec2) -> Color {
+pub fn rocky_planet_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    model_position: Vec3,
+    world_position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
     let normal = if normal.magnitude_squared() > 0.0 {
         normal.normalize()
     } else {
@@ -156,20 +173,20 @@ pub fn rocky_planet_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_posit
             Vec3::new(
                 base_green.x * 0.3 + snow.x * 0.7,
                 base_green.y * 0.3 + snow.y * 0.7,
-                base_green.z * 0.3 + snow.z * 0.7
+                base_green.z * 0.3 + snow.z * 0.7,
             )
         } else if is_tropical {
             Vec3::new(
                 base_green.x * 0.8 + brown.x * 0.2,
                 base_green.y * 0.8 + brown.y * 0.2,
-                base_green.z * 0.8 + brown.z * 0.2
+                base_green.z * 0.8 + brown.z * 0.2,
             )
         } else {
             let mix_factor = elevation * 0.5;
             Vec3::new(
                 base_green.x * (1.0 - mix_factor) + brown.x * mix_factor,
                 base_green.y * (1.0 - mix_factor) + brown.y * mix_factor,
-                base_green.z * (1.0 - mix_factor) + brown.z * mix_factor
+                base_green.z * (1.0 - mix_factor) + brown.z * mix_factor,
             )
         };
 
@@ -181,7 +198,7 @@ pub fn rocky_planet_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_posit
         Vec3::new(
             deep_blue.x * ocean_depth + shallow_blue.x * (1.0 - ocean_depth),
             deep_blue.y * ocean_depth + shallow_blue.y * (1.0 - ocean_depth),
-            deep_blue.z * ocean_depth + shallow_blue.z * (1.0 - ocean_depth)
+            deep_blue.z * ocean_depth + shallow_blue.z * (1.0 - ocean_depth),
         )
     };
 
@@ -195,7 +212,15 @@ pub fn rocky_planet_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_posit
 }
 
 // Gas Giant Shader (Jupiter-like)
-pub fn gas_giant_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, world_position: Vec3, normal: Vec3, _tex_coords: Vec2) -> Color {
+pub fn gas_giant_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    model_position: Vec3,
+    world_position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
     let normal = if normal.magnitude_squared() > 0.0 {
         normal.normalize()
     } else {
@@ -248,7 +273,12 @@ pub fn gas_giant_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position
     let swirled_color = base_color + Vec3::new(swirl, swirl * 0.5, -swirl * 0.3);
 
     // Add color variation
-    let varied_color = swirled_color + Vec3::new(color_variation, color_variation * 0.5, -color_variation * 0.3);
+    let varied_color = swirled_color
+        + Vec3::new(
+            color_variation,
+            color_variation * 0.5,
+            -color_variation * 0.3,
+        );
 
     // Add red spot
     let final_base = varied_color * (1.0 - spot) + red_spot * spot;
@@ -256,14 +286,22 @@ pub fn gas_giant_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position
     let final_color = Vec3::new(
         (final_base.x * shading).clamp(0.0, 1.0),
         (final_base.y * shading).clamp(0.0, 1.0),
-        (final_base.z * shading).clamp(0.0, 1.0)
+        (final_base.z * shading).clamp(0.0, 1.0),
     );
 
     Color::from_float(final_color.x, final_color.y, final_color.z)
 }
 
 // Moon Shader (simple gray with craters)
-pub fn moon_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, world_position: Vec3, normal: Vec3, _tex_coords: Vec2) -> Color {
+pub fn moon_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    model_position: Vec3,
+    world_position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
     let normal = if normal.magnitude_squared() > 0.0 {
         normal.normalize()
     } else {
@@ -297,7 +335,15 @@ pub fn moon_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec
 }
 
 // Ship Shader (metallic blue-gray)
-pub fn ship_shader_metallic(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, _model_position: Vec3, world_position: Vec3, normal: Vec3, _tex_coords: Vec2) -> Color {
+pub fn ship_shader_metallic(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    _model_position: Vec3,
+    world_position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
     let normal = if normal.magnitude_squared() > 0.0 {
         normal.normalize()
     } else {
@@ -319,12 +365,20 @@ pub fn ship_shader_metallic(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, _model_pos
     Color::from_float(
         (color.x * brightness).clamp(0.0, 1.0),
         (color.y * brightness).clamp(0.0, 1.0),
-        (color.z * brightness).clamp(0.0, 1.0)
+        (color.z * brightness).clamp(0.0, 1.0),
     )
 }
 
 // Ring Shader (simple gradient)
-pub fn ring_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, world_position: Vec3, normal: Vec3, tex_coords: Vec2) -> Color {
+pub fn ring_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    model_position: Vec3,
+    world_position: Vec3,
+    normal: Vec3,
+    tex_coords: Vec2,
+) -> Color {
     let normal = if normal.magnitude_squared() > 0.0 {
         normal.normalize()
     } else {
@@ -348,7 +402,7 @@ pub fn ring_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec
     let color = Vec3::new(
         inner_color.x * (1.0 - radial) + outer_color.x * radial,
         inner_color.y * (1.0 - radial) + outer_color.y * radial,
-        inner_color.z * (1.0 - radial) + outer_color.z * radial
+        inner_color.z * (1.0 - radial) + outer_color.z * radial,
     );
 
     // Add some variation using model position for a subtle texture
@@ -356,15 +410,18 @@ pub fn ring_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec
     let final_color = Vec3::new(
         (color.x + variation).clamp(0.0, 1.0),
         (color.y + variation).clamp(0.0, 1.0),
-        (color.z + variation).clamp(0.0, 1.0)
+        (color.z + variation).clamp(0.0, 1.0),
     );
 
-    let ring_final = Vec3::new(final_color.x * light_factor, final_color.y * light_factor, final_color.z * light_factor);
+    let ring_final = Vec3::new(
+        final_color.x * light_factor,
+        final_color.y * light_factor,
+        final_color.z * light_factor,
+    );
 
     Color::from_float(
         ring_final.x.clamp(0.0, 1.0),
         ring_final.y.clamp(0.0, 1.0),
-        ring_final.z.clamp(0.0, 1.0)
+        ring_final.z.clamp(0.0, 1.0),
     )
 }
-

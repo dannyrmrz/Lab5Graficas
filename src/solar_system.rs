@@ -1,6 +1,8 @@
-use nalgebra_glm::Vec3;
 use crate::fragment_shaders::FragmentShader;
-use crate::fragment_shaders::{star_shader, rocky_planet_shader, gas_giant_shader, moon_shader, ring_shader};
+use crate::fragment_shaders::{
+    gas_giant_shader, moon_shader, ring_shader, rocky_planet_shader, star_shader,
+};
+use nalgebra_glm::Vec3;
 
 #[derive(Clone, Copy)]
 pub enum CelestialBodyType {
@@ -132,7 +134,8 @@ impl SolarSystem {
             0.8,
             0.6,
             0.0,
-        ).add_moon(Moon {
+        )
+        .add_moon(Moon {
             name: "Luna 1".to_string(),
             radius: 5.0,
             orbit_radius: 40.0,
@@ -150,7 +153,8 @@ impl SolarSystem {
             0.5,
             0.4,
             1.5,
-        ).add_moon(Moon {
+        )
+        .add_moon(Moon {
             name: "Luna".to_string(),
             radius: 6.0,
             orbit_radius: 50.0,
@@ -168,14 +172,16 @@ impl SolarSystem {
             0.3,
             0.25,
             3.0,
-        ).with_rings(40.0, 60.0)
-         .add_moon(Moon {
+        )
+        .with_rings(40.0, 60.0)
+        .add_moon(Moon {
             name: "Io".to_string(),
             radius: 8.0,
             orbit_radius: 70.0,
             orbit_speed: 1.5,
             initial_angle: 0.0,
-        }).add_moon(Moon {
+        })
+        .add_moon(Moon {
             name: "Europa".to_string(),
             radius: 7.0,
             orbit_radius: 90.0,
@@ -205,7 +211,8 @@ impl SolarSystem {
             0.2,
             0.2,
             6.0,
-        ).with_rings(35.0, 55.0);
+        )
+        .with_rings(35.0, 55.0);
         system.bodies.push(planet5);
 
         system
@@ -223,4 +230,3 @@ impl SolarSystem {
         self.bodies.len()
     }
 }
-

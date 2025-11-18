@@ -1,42 +1,58 @@
 # Sistema Solar - Simulación 3D con Software Renderer
 
-Este proyecto implementa una simulación completa del sistema solar usando un software renderer desarrollado desde cero en Rust. El sistema incluye múltiples planetas, lunas, anillos, y una cámara completamente funcional que puede explorar el sistema.
+Este proyecto implementa una simulación completa del sistema solar usando un software renderer desarrollado desde cero en Rust. El sistema incluye múltiples planetas, lunas, anillos y una cámara completamente funcional que puede explorar el sistema.
+
+## 🧭 Requerimientos del Laboratorio 5
+
+- Renderizar un sol y varios planetas alineados en el plano eclíptico, con traslación orbital y rotación sobre su eje.
+- Implementar una cámara móvil que recorra el plano eclíptico (movimiento 3D opcional) e interactúe con los modelos.
+- Mantener el repositorio ordenado, sin binarios generados y con un README que documente claramente el proyecto.
+- Incluir en el README un video donde la cámara explore el sistema creado.
+- (Opcionales / puntos extra) Instant warping, animaciones, nave que siga a la cámara, skybox, colisiones, movimiento 3D pleno y renderizado de órbitas.
+
+## ✅ Cumplimiento rápido
+
+- **Sistema solar físico:** Plano eclíptico, órbitas circulares y rotación axial para todos los cuerpos.
+- **Cámara multi-modo:** Movimiento libre en 3D, seguimiento de planetas y teletransporte animado entre destinos.
+- **Nave acompañante:** Modelo 3D propio que sigue la cámara con detección de colisiones.
+- **Skybox y órbitas:** Estrellas procedurales/textura e iluminación simple, con visualización de trayectorias.
+- **Repositorio listo para entrega:** Estructura limpia, instrucciones de ejecución y espacio reservado para el video.
 
 ## 🎥 Video de Demostración
 
-[Enlace al video de demostración - Agregar aquí el link al video]
+[Agregar aquí el enlace al video que recorre el sistema]
+
+## 📦 Entregables
+
+- **Código fuente:** Este repositorio (`main`, `src/`, `assets/` y documentación) sin artefactos de compilación.
+- **README actualizado:** Contiene requisitos, características, controles, instrucciones de ejecución y link al video.
+- **Video (obligatorio):** Sube el video a la plataforma de tu preferencia (YouTube, Drive, etc.) y referencia el enlace en la sección anterior.
 
 ## ✨ Características Implementadas
 
 ### Características Requeridas
 
-- ✅ **Sistema Solar Completo**: Sol y múltiples planetas alineados en el plano eclíptico
-- ✅ **Movimiento Orbital**: Planetas orbitando alrededor del sol en órbitas circulares
-- ✅ **Rotación Axial**: Planetas rotando sobre su propio eje
-- ✅ **Sistema de Cámara**: Cámara que puede moverse entre los planetas del sistema
-- ✅ **Movimiento en Plano Eclíptico**: Cámara puede moverse sobre el plano eclíptico
+- ✅ **Sistema Solar Completo**: Sol y múltiples planetas alineados en el plano eclíptico.
+- ✅ **Movimiento Orbital**: Planetas orbitando alrededor del sol en órbitas circulares.
+- ✅ **Rotación Axial**: Planetas rotando sobre su propio eje.
+- ✅ **Sistema de Cámara**: Cámara que puede moverse entre los planetas del sistema.
+- ✅ **Movimiento en Plano Eclíptico**: Cámara que puede desplazarse sobre el plano eclíptico (y, adicionalmente, movimiento 3D libre).
 
 ### Características Adicionales (Puntos Extra)
 
-- ✅ **5 Planetas/Estrellas/Lunas** (50 puntos): 
+- ✅ **5 Planetas/Estrellas/Lunas** (50 puntos):
   - 1 Sol
   - 5 Planetas (2 rocosos, 2 gigantes gaseosos)
   - 3 Lunas orbitando diferentes planetas
   - Total: 9 cuerpos celestes
 
-- ✅ **Warping Instantáneo** (10 puntos): Sistema de teletransporte a diferentes planetas usando teclas numéricas
-
-- ✅ **Warping Animado** (10 puntos): Animación suave con easing (cubic ease-in-out) al teletransportarse
-
-- ✅ **Nave Espacial** (30 puntos): Modelo 3D de nave que sigue a la cámara, renderizado con shader personalizado
-
-- ✅ **Skybox con Estrellas** (10 puntos): Skybox procedural con campo de estrellas generado proceduralmente
-
-- ✅ **Detección de Colisiones** (10 puntos): Sistema que previene que la cámara/nave atraviese los cuerpos celestes
-
-- ✅ **Movimiento 3D Completo** (40 puntos): Cámara puede moverse libremente en 3D con rotación completa
-
-- ✅ **Renderizado de Órbitas** (20 puntos): Visualización de las órbitas de todos los planetas
+- ✅ **Warping Instantáneo** (10 puntos): Sistema de teletransporte a diferentes planetas usando teclas numéricas.
+- ✅ **Warping Animado** (10 puntos): Animación suave con easing (cubic ease-in-out) al teletransportarse.
+- ✅ **Nave Espacial** (30 puntos): Modelo 3D de nave que sigue a la cámara, renderizado con shader personalizado.
+- ✅ **Skybox con Estrellas** (10 puntos): Skybox procedural con campo de estrellas generado proceduralmente.
+- ✅ **Detección de Colisiones** (10 puntos): Sistema que previene que la cámara/nave atraviese los cuerpos celestes.
+- ✅ **Movimiento 3D Completo** (40 puntos): Cámara puede moverse libremente en 3D con rotación completa.
+- ✅ **Renderizado de Órbitas** (20 puntos): Visualización de las órbitas de todos los planetas.
 
 ## 🎮 Controles
 
@@ -62,7 +78,8 @@ Este proyecto implementa una simulación completa del sistema solar usando un so
 
 ### Toggles
 - **O**: Mostrar/ocultar órbitas de planetas
-- **S**: Mostrar/ocultar nave espacial
+- **B**: Mostrar/ocultar el skybox estelar
+- **N**: Mostrar/ocultar la nave espacial
 - **ESC**: Salir del programa
 
 ## 🏗️ Estructura del Proyecto

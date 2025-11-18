@@ -30,6 +30,15 @@ impl Framebuffer {
         }
     }
 
+    pub fn clear_to_color(&mut self, color: u32) {
+        for pixel in self.buffer.iter_mut() {
+            *pixel = color;
+        }
+        for depth in self.zbuffer.iter_mut() {
+            *depth = f32::INFINITY;
+        }
+    }
+
     pub fn point(&mut self, x: usize, y: usize, depth: f32) {
         if x < self.width && y < self.height {
             if !depth.is_finite() {

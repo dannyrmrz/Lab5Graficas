@@ -1,4 +1,4 @@
-use nalgebra_glm::{Vec3, Mat4};
+use nalgebra_glm::{Mat4, Vec3};
 
 pub struct Camera {
     pub position: Vec3,
@@ -13,6 +13,7 @@ pub struct Camera {
     pub distance: f32,
     pub follow_target: Option<usize>, // Index of body to follow
     pub warp_target: Option<Vec3>,
+    pub warp_start: Option<Vec3>,
     pub warp_progress: f32,
     pub is_warping: bool,
 }
@@ -22,12 +23,12 @@ impl Camera {
         let position = Vec3::new(0.0, 200.0, 500.0);
         let target = Vec3::new(0.0, 0.0, 0.0);
         let direction = (target - position).normalize();
-        
+
         // Calculate yaw and pitch from direction
         let yaw = direction.z.atan2(direction.x);
         let pitch = direction.y.asin();
         let distance = (target - position).magnitude();
-        
+
         Camera {
             position,
             target,
@@ -41,54 +42,39 @@ impl Camera {
             distance,
             follow_target: None,
             warp_target: None,
+            warp_start: None,
             warp_progress: 0.0,
             is_warping: false,
         }
     }
 
     pub fn get_view_matrix(&self) -> Mat4 {
-        let eye = self.position;
-        let center = self.target;
-        let up = self.up;
-
-        let f = (center - eye).normalize();
-        let s = f.cross(&up).normalize();
-        let u = s.cross(&f);
-
-        Mat4::new(
-            s.x, u.x, -f.x, 0.0,
-            s.y, u.y, -f.y, 0.0,
-            s.z, u.z, -f.z, 0.0,
-            -s.dot(&eye), -u.dot(&eye), f.dot(&eye), 1.0,
-        )
+        nalgebra_glm::look_at(&self.position, &self.target, &self.up)
     }
 
     pub fn get_projection_matrix(&self) -> Mat4 {
-        let f = 1.0 / (self.fov.to_radians() / 2.0).tan();
-        let range = self.far - self.near;
-
-        Mat4::new(
-            f / self.aspect, 0.0, 0.0, 0.0,
-            0.0, f, 0.0, 0.0,
-            0.0, 0.0, -(self.far + self.near) / range, -1.0,
-            0.0, 0.0, -(2.0 * self.far * self.near) / range, 0.0,
-        )
+        nalgebra_glm::perspective(self.fov.to_radians(), self.aspect, self.near, self.far)
     }
 
     pub fn update(&mut self, delta_time: f32) {
         if self.is_warping {
-            self.warp_progress += delta_time * 2.0; // Warp speed
-            if let Some(target) = self.warp_target {
+            self.warp_progress = (self.warp_progress + delta_time * 2.0).min(1.0);
+            if let (Some(start), Some(target)) = (self.warp_start.clone(), self.warp_target.clone())
+            {
                 if self.warp_progress >= 1.0 {
                     self.position = target;
                     self.is_warping = false;
                     self.warp_progress = 0.0;
+                    self.warp_start = None;
                     self.warp_target = None;
+                    self.sync_from_target();
                 } else {
                     // Smooth interpolation with easing
                     let t = self.ease_in_out_cubic(self.warp_progress);
-                    self.position = self.position * (1.0 - t) + target * t;
+                    self.position = start * (1.0 - t) + target * t;
                 }
+            } else {
+                self.is_warping = false;
             }
         }
     }
@@ -103,6 +89,7 @@ impl Camera {
 
     pub fn start_warp(&mut self, target: Vec3) {
         self.warp_target = Some(target);
+        self.warp_start = Some(self.position);
         self.warp_progress = 0.0;
         self.is_warping = true;
     }
@@ -110,24 +97,17 @@ impl Camera {
     pub fn follow_body(&mut self, body_position: Vec3, offset: Vec3) {
         self.target = body_position;
         self.position = body_position + offset;
+        self.sync_from_target();
     }
 
     pub fn move_forward(&mut self, distance: f32) {
-        let direction = Vec3::new(
-            self.yaw.cos() * self.pitch.cos(),
-            self.pitch.sin(),
-            self.yaw.sin() * self.pitch.cos(),
-        );
+        let direction = self.forward_direction();
         self.position = self.position + direction * distance;
         self.update_direction();
     }
 
     pub fn move_right(&mut self, distance: f32) {
-        let forward = Vec3::new(
-            self.yaw.cos() * self.pitch.cos(),
-            self.pitch.sin(),
-            self.yaw.sin() * self.pitch.cos(),
-        );
+        let forward = self.forward_direction();
         let right = forward.cross(&self.up).normalize();
         self.position = self.position + right * distance;
         self.update_direction();
@@ -157,9 +137,27 @@ impl Camera {
         self.target = self.position + direction * self.distance;
     }
 
+    fn sync_from_target(&mut self) {
+        let direction = self.target - self.position;
+        let distance = direction.magnitude();
+        if distance > 0.0 {
+            let dir_norm = direction / distance;
+            self.distance = distance;
+            self.yaw = dir_norm.z.atan2(dir_norm.x);
+            self.pitch = dir_norm.y.asin();
+        }
+    }
+
+    pub fn forward_direction(&self) -> Vec3 {
+        Vec3::new(
+            self.yaw.cos() * self.pitch.cos(),
+            self.pitch.sin(),
+            self.yaw.sin() * self.pitch.cos(),
+        )
+    }
+
     pub fn check_collision(&self, center: Vec3, radius: f32) -> bool {
         let distance = (self.position - center).magnitude();
         distance < radius + 10.0 // 10.0 is safety margin
     }
 }
-

@@ -10,6 +10,8 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     vertex.position.z,
     1.0
   );
+  let world_position4 = uniforms.model_matrix * position;
+  let world_position = Vec3::new(world_position4.x, world_position4.y, world_position4.z);
   let mvp = uniforms.projection_matrix * uniforms.view_matrix * uniforms.model_matrix;
   let transformed = mvp * position;
 
@@ -41,8 +43,10 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     uniforms.model_matrix[8], uniforms.model_matrix[9], uniforms.model_matrix[10]
   );
   let normal_matrix = model_mat3.transpose().try_inverse().unwrap_or(Mat3::identity());
-
-  let transformed_normal = normal_matrix * vertex.normal;
+  let mut transformed_normal = normal_matrix * vertex.normal;
+  if transformed_normal.magnitude_squared() > 0.0 {
+    transformed_normal = transformed_normal.normalize();
+  }
 
   // Create a new Vertex with transformed attributes
   Vertex {
@@ -52,6 +56,7 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     color: vertex.color,
     transformed_position,
     transformed_normal,
+    world_position,
   }
 }
 

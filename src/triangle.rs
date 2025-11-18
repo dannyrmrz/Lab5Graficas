@@ -18,7 +18,7 @@ pub fn _triangle(v1: &Vertex, v2: &Vertex, v3: &Vertex) -> Vec<Fragment> {
 }
 
 pub fn triangle(v1: &Vertex, v2: &Vertex, v3: &Vertex) -> Vec<Fragment> {
-  triangle_with_shader(v1, v2, v3, |_, _, _, _, _, _| Color::new(100, 100, 100))
+  triangle_with_shader(v1, v2, v3, |_, _, _, _, _, _, _| Color::new(100, 100, 100))
 }
 
 pub fn triangle_with_shader(v1: &Vertex, v2: &Vertex, v3: &Vertex, fragment_shader: FragmentShader) -> Vec<Fragment> {
@@ -64,17 +64,27 @@ pub fn triangle_with_shader(v1: &Vertex, v2: &Vertex, v3: &Vertex, fragment_shad
          w2 >= 0.0 && w2 <= 1.0 &&
          w3 >= 0.0 && w3 <= 1.0 {
         // Interpolate normal
-        let normal = Vec3::new(
-            v1.transformed_normal.x * w1 + v2.transformed_normal.x * w2 + v3.transformed_normal.x * w3,
-            v1.transformed_normal.y * w1 + v2.transformed_normal.y * w2 + v3.transformed_normal.y * w3,
-            v1.transformed_normal.z * w1 + v2.transformed_normal.z * w2 + v3.transformed_normal.z * w3
-        ).normalize();
+        let mut normal = Vec3::new(
+          v1.transformed_normal.x * w1 + v2.transformed_normal.x * w2 + v3.transformed_normal.x * w3,
+          v1.transformed_normal.y * w1 + v2.transformed_normal.y * w2 + v3.transformed_normal.y * w3,
+          v1.transformed_normal.z * w1 + v2.transformed_normal.z * w2 + v3.transformed_normal.z * w3
+        );
+        if normal.magnitude_squared() > 0.0 {
+          normal = normal.normalize();
+        }
         
-        // Interpolate position (world space)
+        // Interpolate position in model space
         let position = Vec3::new(
             v1.position.x * w1 + v2.position.x * w2 + v3.position.x * w3,
             v1.position.y * w1 + v2.position.y * w2 + v3.position.y * w3,
             v1.position.z * w1 + v2.position.z * w2 + v3.position.z * w3
+        );
+        
+        // Interpolate world position
+        let world_position = Vec3::new(
+          v1.world_position.x * w1 + v2.world_position.x * w2 + v3.world_position.x * w3,
+          v1.world_position.y * w1 + v2.world_position.y * w2 + v3.world_position.y * w3,
+          v1.world_position.z * w1 + v2.world_position.z * w2 + v3.world_position.z * w3
         );
         
         // Interpolate texture coordinates
@@ -84,7 +94,7 @@ pub fn triangle_with_shader(v1: &Vertex, v2: &Vertex, v3: &Vertex, fragment_shad
         );
 
         // Use fragment shader to calculate color
-        let color = fragment_shader(v1, v2, v3, position, normal, tex_coords);
+        let color = fragment_shader(v1, v2, v3, position, world_position, normal, tex_coords);
 
         // Interpolate depth
         let depth = a.z * w1 + b.z * w2 + c.z * w3;

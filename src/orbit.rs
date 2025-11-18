@@ -20,7 +20,7 @@ pub fn generate_orbit_path(radius: f32, segments: u32) -> Vec<Vertex> {
     vertices
 }
 
-pub fn orbit_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, _position: Vec3, _normal: Vec3, _tex_coords: nalgebra_glm::Vec2) -> Color {
+pub fn orbit_shader(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, _model_position: Vec3, _world_position: Vec3, _normal: Vec3, _tex_coords: nalgebra_glm::Vec2) -> Color {
     // Simple white/cyan orbit line
     Color::from_float(0.3, 0.6, 0.9)
 }

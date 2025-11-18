@@ -32,8 +32,11 @@ impl Framebuffer {
 
     pub fn point(&mut self, x: usize, y: usize, depth: f32) {
         if x < self.width && y < self.height {
+            if !depth.is_finite() {
+                return;
+            }
             let index = y * self.width + x;
-            if self.zbuffer[index] > depth {
+            if self.zbuffer[index] >= depth {
                 self.buffer[index] = self.current_color;
                 self.zbuffer[index] = depth;
             }

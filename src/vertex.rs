@@ -9,6 +9,7 @@ pub struct Vertex {
   pub color: Color,
   pub transformed_position: Vec3,
   pub transformed_normal: Vec3,
+  pub world_position: Vec3,
 }
 
 impl Vertex {
@@ -20,6 +21,7 @@ impl Vertex {
       color: Color::black(),
       transformed_position: position,
       transformed_normal: normal,
+      world_position: position,
     }
   }
 
@@ -31,6 +33,7 @@ impl Vertex {
       color,
       transformed_position: Vec3::new(0.0, 0.0, 0.0),
       transformed_normal: Vec3::new(0.0, 0.0, 0.0),
+      world_position: position,
     }
   }
 
@@ -49,6 +52,7 @@ impl Default for Vertex {
       color: Color::black(),
       transformed_position: Vec3::new(0.0, 0.0, 0.0),
       transformed_normal: Vec3::new(0.0, 1.0, 0.0),
+      world_position: Vec3::new(0.0, 0.0, 0.0),
     }
   }
 }

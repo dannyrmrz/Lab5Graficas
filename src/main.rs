@@ -14,7 +14,6 @@ mod sphere;
 mod fragment_shaders;
 mod solar_system;
 mod camera;
-mod ship;
 mod skybox;
 mod orbit;
 mod texture;
@@ -26,10 +25,8 @@ use shaders::vertex_shader;
 use sphere::{generate_sphere, generate_ring};
 use solar_system::SolarSystem;
 use camera::Camera;
-use ship::load_ship;
 use skybox::{generate_skybox_vertices, skybox_shader_procedural, skybox_shader_textured, Skybox};
 use orbit::{generate_orbit_path, orbit_shader};
-use fragment_shaders::ship_shader_metallic;
 use line::line;
 
 pub struct Uniforms {
@@ -112,31 +109,31 @@ fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Ve
         }
     }
 
-    // Rasterization Stage
-    let mut fragments = Vec::new();
+    // Rasterization + Fragment Processing Stage
     for tri in &triangles {
-        fragments.extend(triangle_with_shader(&tri[0], &tri[1], &tri[2], fragment_shader));
-        // Limit fragments to avoid hanging
-        if fragments.len() > 500000 {
-            eprintln!("Warning: Too many fragments ({}), stopping rasterization", fragments.len());
-            break;
-        }
-    }
-
-    // Fragment Processing Stage
-    for fragment in fragments {
-        let x = fragment.position.x as usize;
-        let y = fragment.position.y as usize;
-        if x < framebuffer.width && y < framebuffer.height {
-            let color = fragment.color.to_hex();
-            framebuffer.set_current_color(color);
-            framebuffer.point(x, y, fragment.depth);
+        let triangle_fragments = triangle_with_shader(&tri[0], &tri[1], &tri[2], fragment_shader);
+        for fragment in triangle_fragments {
+            let x = fragment.position.x as usize;
+            let y = fragment.position.y as usize;
+            if x < framebuffer.width && y < framebuffer.height {
+                let color = fragment.color.to_hex();
+                framebuffer.set_current_color(color);
+                framebuffer.point(x, y, fragment.depth);
+            }
         }
     }
 }
 
 
 fn main() {
+    #[cfg(target_family = "unix")]
+    {
+        // Force X11 backend when Wayland server capabilities are insufficient (WSL case)
+        if std::env::var("WINIT_UNIX_BACKEND").is_err() {
+            std::env::set_var("WINIT_UNIX_BACKEND", "x11");
+        }
+    }
+
     println!("Initializing application...");
     let window_width = 1200;
     let window_height = 800;
@@ -178,11 +175,6 @@ fn main() {
     let moon_sphere = generate_sphere(1.0, 25);
     let _ring = generate_ring(1.2, 2.0, 60);
     println!("Geometry generated");
-    // Load ship model from OBJ file (with fallback to procedural model)
-    let ship_model = load_ship().unwrap_or_else(|e| {
-        eprintln!("Error loading ship model: {}", e);
-        Vec::new()
-    });
     println!("Generating skybox vertices...");
     let skybox_vertices = generate_skybox_vertices();
     println!("Skybox vertices generated: {} vertices", skybox_vertices.len());
@@ -218,14 +210,15 @@ fn main() {
     println!("Orbit paths generated: {} paths", orbit_paths.len());
 
     let mut time = 0.0f32;
-    let mut prev_keys = [false; 10];
+    let mut prev_warp_keys = [false; 6];
+    let mut prev_orbit_toggle = false;
+    let mut prev_camera_toggle = false;
     let mut current_body_index = 0;
     let mut show_orbits = true;
-    let mut show_ship = true;
     let mut camera_mode = 0; // 0 = free, 1 = follow, 2 = orbit
 
     println!("Starting render loop. Camera position: {:?}, target: {:?}", camera.position, camera.target);
-    println!("Press ESC to exit, WASD to move, arrow keys to rotate, 1-6 to warp to planets");
+    println!("Press ESC to exit, WASD to move, arrow keys to rotate, 1-6 to warp to planets, O to toggle orbits, C to cycle camera modes");
 
     while window.is_open() {
         if window.is_key_down(Key::Escape) {
@@ -233,22 +226,17 @@ fn main() {
         }
 
         // Handle input
-        let keys = [
+        let warp_keys = [
             window.is_key_down(Key::Key1),
             window.is_key_down(Key::Key2),
             window.is_key_down(Key::Key3),
             window.is_key_down(Key::Key4),
             window.is_key_down(Key::Key5),
             window.is_key_down(Key::Key6),
-            window.is_key_down(Key::Key0),
-            window.is_key_down(Key::O),
-            window.is_key_down(Key::S),
-            window.is_key_down(Key::C),
         ];
 
-        // Warp to planets (1-6)
-        for i in 0..6 {
-            if keys[i] && !prev_keys[i] {
+        for (i, &pressed) in warp_keys.iter().enumerate() {
+            if pressed && !prev_warp_keys[i] {
                 if let Some(body) = solar_system.get_body_by_index(i) {
                     let pos = body.get_position(solar_system.time);
                     let offset = Vec3::new(0.0, body.radius * 3.0, body.radius * 5.0);
@@ -258,30 +246,26 @@ fn main() {
                 }
             }
         }
+        prev_warp_keys.copy_from_slice(&warp_keys);
 
-        // Toggle orbits
-        if keys[7] && !prev_keys[7] {
+        let orbit_toggle = window.is_key_down(Key::O);
+        if orbit_toggle && !prev_orbit_toggle {
             show_orbits = !show_orbits;
         }
+        prev_orbit_toggle = orbit_toggle;
 
-        // Toggle ship
-        if keys[8] && !prev_keys[8] {
-            show_ship = !show_ship;
-        }
-
-        // Toggle camera mode
-        if keys[9] && !prev_keys[9] {
+        let camera_toggle = window.is_key_down(Key::C);
+        if camera_toggle && !prev_camera_toggle {
             camera_mode = (camera_mode + 1) % 3;
         }
-
-        prev_keys = keys;
+        prev_camera_toggle = camera_toggle;
 
         // Camera movement (3D)
         let move_speed = 5.0;
         if window.is_key_down(Key::W) {
             camera.move_forward(move_speed);
         }
-        if window.is_key_down(Key::S) && !keys[8] { // Don't conflict with ship toggle
+        if window.is_key_down(Key::S) {
             camera.move_forward(-move_speed);
         }
         if window.is_key_down(Key::A) {
@@ -413,7 +397,15 @@ fn main() {
                             let transformed_v2 = vertex_shader(v2, &orbit_uniforms);
                             
                             // Draw line using line rendering with orbit color
-                            let orbit_color = orbit_shader(v1, v2, v1, v1.position, v1.normal, v1.tex_coords);
+                            let orbit_color = orbit_shader(
+                                &transformed_v1,
+                                &transformed_v2,
+                                &transformed_v1,
+                                v1.position,
+                                transformed_v1.world_position,
+                                v1.normal,
+                                v1.tex_coords,
+                            );
                             let line_fragments = line::line(&transformed_v1, &transformed_v2);
                             for fragment in line_fragments {
                                 let x = fragment.position.x as usize;
@@ -493,25 +485,6 @@ fn main() {
                 };
                 render(&mut framebuffer, &moon_uniforms, &moon_sphere, fragment_shaders::moon_shader);
             }
-        }
-
-        // Render ship if enabled
-        if show_ship {
-            let ship_offset = Vec3::new(0.0, -20.0, -30.0); // Behind and below camera
-            let ship_pos = camera.position + ship_offset;
-            let ship_rotation = Vec3::new(0.0, camera.yaw + std::f32::consts::PI, 0.0);
-            let ship_matrix = create_model_matrix(ship_pos, 5.0, ship_rotation);
-            let ship_uniforms = Uniforms {
-                model_matrix: ship_matrix,
-                view_matrix,
-                projection_matrix,
-                screen_width: framebuffer_width as f32,
-                screen_height: framebuffer_height as f32,
-            };
-            // Ship shader with metallic look
-            // Use a simple shader function that doesn't capture variables
-            let ship_shader = ship_shader_metallic;
-            render(&mut framebuffer, &ship_uniforms, &ship_model, ship_shader);
         }
 
         // Debug: Check if framebuffer has any non-black pixels

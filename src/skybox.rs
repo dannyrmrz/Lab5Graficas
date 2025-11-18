@@ -34,11 +34,11 @@ impl Skybox {
     }
 }
 
-pub fn skybox_shader_textured(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, position: Vec3, _normal: Vec3, _tex_coords: nalgebra_glm::Vec2) -> Color {
+pub fn skybox_shader_textured(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, _world_position: Vec3, _normal: Vec3, _tex_coords: nalgebra_glm::Vec2) -> Color {
     SKYBOX_TEXTURE.with(|tex_opt| {
         if let Some(texture) = tex_opt.borrow().as_ref() {
             // Convert 3D position to UV coordinates for equirectangular mapping
-            let pos = position.normalize();
+            let pos = model_position.normalize();
             
             // Calculate UV coordinates from spherical coordinates
             // For equirectangular projection:
@@ -54,7 +54,7 @@ pub fn skybox_shader_textured(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, position
             Color::from_hex(color_hex)
         } else {
             // Fallback to procedural if texture not set
-            skybox_shader_procedural(_v1, _v2, _v3, position, _normal, _tex_coords)
+            skybox_shader_procedural(_v1, _v2, _v3, model_position, _world_position, _normal, _tex_coords)
         }
     })
 }
@@ -115,9 +115,9 @@ pub fn generate_skybox_vertices() -> Vec<Vertex> {
 }
 
 // Fallback procedural shader if texture loading fails
-pub fn skybox_shader_procedural(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, position: Vec3, _normal: Vec3, _tex_coords: nalgebra_glm::Vec2) -> Color {
+pub fn skybox_shader_procedural(_v1: &Vertex, _v2: &Vertex, _v3: &Vertex, model_position: Vec3, _world_position: Vec3, _normal: Vec3, _tex_coords: nalgebra_glm::Vec2) -> Color {
     // Create starfield effect
-    let pos = position.normalize();
+    let pos = model_position.normalize();
     
     // Use hash function to create random stars
     let hash = |n: f32| -> f32 {

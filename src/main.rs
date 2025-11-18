@@ -387,9 +387,9 @@ fn main() {
         let up_dir = camera.up.normalize();
         let right_dir = forward_dir.cross(&up_dir).normalize();
         let mut ship_position = camera.position
-            + forward_dir * 140.0  // push ship ahead of the camera so we are no longer inside it
-            - up_dir * 25.0        // drop it slightly to keep cockpit below the view axis
-            + right_dir * 12.0;    // small lateral offset so it does not cover the reticle
+            + forward_dir * 260.0  // ship much farther ahead so the camera sits well behind it
+            - up_dir * 40.0        // drop it a bit more to keep the cockpit low in frame
+            + right_dir * 30.0; // lateral offset keeps HUD clear
         for body in &solar_system.bodies {
             let pos = body.get_position(solar_system.time);
             let to_ship = ship_position - pos;

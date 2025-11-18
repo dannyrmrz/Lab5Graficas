@@ -16,23 +16,14 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     } else {
         1.0
     };
-    let ndc = Vec3::new(
-        (transformed.x / w).clamp(-10.0, 10.0), // Clamp to prevent extreme values
-        (transformed.y / w).clamp(-10.0, 10.0),
-        (transformed.z / w).clamp(-10.0, 10.0),
-    );
-
-    // Convert NDC to screen coordinates
-    // Convert from NDC [-1, 1] to screen [0, width/height]
-    // Y is inverted because screen Y increases downward
-    // Clamp NDC to valid range before conversion
-    let ndc_x = ndc.x.clamp(-1.0, 1.0);
-    let ndc_y = ndc.y.clamp(-1.0, 1.0);
+    let ndc_x = (transformed.x / w).clamp(-1.0, 1.0);
+    let ndc_y = (transformed.y / w).clamp(-1.0, 1.0);
+    let ndc_z = transformed.z / w;
 
     let transformed_position = Vec3::new(
         (ndc_x + 1.0) * 0.5 * uniforms.screen_width,
-        (1.0 - ndc_y) * 0.5 * uniforms.screen_height, // Invert Y
-        ndc.z,
+        (1.0 - ndc_y) * 0.5 * uniforms.screen_height,
+        ndc_z,
     );
 
     // Transform normal (only through model matrix, not view/projection)

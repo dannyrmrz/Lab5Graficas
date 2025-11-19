@@ -18,7 +18,8 @@ mod triangle;
 mod vertex;
 
 use fragment_shaders::{
-    gas_giant_shader, moon_shader, ring_shader, rocky_planet_shader, ship_shader, star_shader,
+    crimson_planet_shader, gas_giant_shader, moon_shader, ring_shader, rocky_planet_shader,
+    ship_shader, star_shader,
 };
 use framebuffer::Framebuffer;
 use obj::Obj;
@@ -445,21 +446,21 @@ fn main() {
     });
 
     planets.push(Planet {
-        name: "Umbra",
+        name: "Pyra",
         orbit_radius: 640.0,
-        orbit_speed: 0.26,
-        rotation_speed: 0.9,
-        scale: 70.0,
+        orbit_speed: 0.29,
+        rotation_speed: 1.1,
+        scale: 78.0,
         phase: 0.7,
-        orbit_color: 0x8899FF,
-        collision_radius: 90.0,
+        orbit_color: 0xFF4433,
+        collision_radius: 100.0,
         mesh: &rocky_mesh,
-        shader: rocky_planet_shader,
+        shader: crimson_planet_shader,
         moon: Some(Moon {
-            orbit_radius: 110.0,
-            orbit_speed: 1.8,
-            rotation_speed: 0.7,
-            scale: 24.0,
+            orbit_radius: 125.0,
+            orbit_speed: 1.6,
+            rotation_speed: 0.8,
+            scale: 26.0,
             phase: 1.2,
             mesh: &moon_mesh,
             shader: moon_shader,
@@ -487,7 +488,7 @@ fn main() {
         (Key::Key2, "Mercurion"),
         (Key::Key3, "Aurelia"),
         (Key::Key4, "Zephyrus"),
-        (Key::Key5, "Umbra"),
+        (Key::Key5, "Pyra"),
         (Key::Key6, "Cryon"),
     ];
 

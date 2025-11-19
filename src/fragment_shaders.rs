@@ -208,6 +208,53 @@ pub fn rocky_planet_shader(
     Color::from_float(final_color.x, final_color.y, final_color.z)
 }
 
+pub fn crimson_planet_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
+    let light_dir = Vec3::new(-0.2, 0.4, -1.0).normalize();
+    let intensity = dot(&normal.normalize(), &light_dir).max(0.0);
+
+    let basalt_noise = fbm(
+        Vec3::new(position.x * 3.5, position.y * 3.5, position.z * 3.5),
+        4,
+    );
+    let fissure_noise = fbm(
+        Vec3::new(position.x * 8.0, position.y * 8.0, position.z * 8.0),
+        5,
+    );
+
+    let crater_mask = (basalt_noise - 0.45).abs();
+    let lava_threshold = (fissure_noise * 1.4 - 0.5).clamp(0.0, 1.0);
+
+    let basalt = Vec3::new(0.2, 0.05, 0.05);
+    let ember = Vec3::new(0.74, 0.16, 0.08);
+    let lava_core = Vec3::new(1.0, 0.42, 0.18);
+
+    let lava_mix = lava_threshold.powf(1.6);
+    let surface_color = basalt * (1.0 - lava_mix) + ember * lava_mix;
+    let molten_core = surface_color * (1.0 - lava_mix) + lava_core * lava_mix;
+
+    let crater_color = surface_color * (0.5 + crater_mask * 0.4);
+    let final_base = crater_color * (1.0 - lava_mix) + molten_core * lava_mix;
+
+    let rim_specular = (normal.y * 0.5 + 0.5).powf(8.0) * 0.3;
+    let glow = lava_mix * 0.4;
+
+    let shaded = final_base * (intensity * 0.8 + 0.2) + Vec3::new(glow, glow * 0.6, glow * 0.4);
+    let final_color = Vec3::new(
+        (shaded.x + rim_specular).clamp(0.0, 1.0),
+        (shaded.y + rim_specular * 0.4).clamp(0.0, 1.0),
+        shaded.z.clamp(0.0, 1.0),
+    );
+
+    Color::from_float(final_color.x, final_color.y, final_color.z)
+}
+
 // Gas Giant Shader (Jupiter-like)
 pub fn gas_giant_shader(
     _v1: &Vertex,

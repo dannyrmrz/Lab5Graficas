@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 
 use minifb::{Key, Window, WindowOptions};
 use nalgebra_glm::{Mat4, Vec3};
+use rayon::prelude::*;
 
 mod color;
 mod fragment;
@@ -255,26 +256,14 @@ fn render(
         transformed_vertices.push(transformed);
     }
 
-    let mut triangles = Vec::new();
-    for i in (0..transformed_vertices.len()).step_by(3) {
-        if i + 2 < transformed_vertices.len() {
-            triangles.push([
-                transformed_vertices[i].clone(),
-                transformed_vertices[i + 1].clone(),
-                transformed_vertices[i + 2].clone(),
-            ]);
-        }
-    }
-
-    let mut fragments = Vec::new();
-    for tri in &triangles {
-        fragments.extend(triangle_with_shader(
-            &tri[0],
-            &tri[1],
-            &tri[2],
-            fragment_shader,
-        ));
-    }
+    let fragments = transformed_vertices
+        .par_chunks(3)
+        .filter(|chunk| chunk.len() == 3)
+        .map(|chunk| triangle_with_shader(&chunk[0], &chunk[1], &chunk[2], fragment_shader))
+        .reduce(|| Vec::new(), |mut acc, mut chunk| {
+            acc.append(&mut chunk);
+            acc
+        });
 
     for fragment in fragments {
         let x = fragment.position.x as usize;

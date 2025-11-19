@@ -8,3 +8,4 @@ minifb = "0.26.0"
 nalgebra-glm = "0.18.0"
 tobj = "4.0.2"
 image = { version = "0.25.2", default-features = false, features = ["jpeg", "png"] }
+rayon = "1.10"

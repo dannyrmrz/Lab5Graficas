@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::f32::consts::TAU;
+use std::f32::consts::{PI, TAU};
 use std::time::{Duration, Instant};
 
 use minifb::{Key, Window, WindowOptions};
@@ -592,7 +592,7 @@ fn main() {
         let ship_matrix = create_model_matrix(
             ship_screen,
             90.0 * camera.zoom,
-            Vec3::new(0.2 + (time * 1.5).sin() * 0.1, 0.0, bank),
+            Vec3::new(0.2 + (time * 1.5).sin() * 0.1, PI, bank),
         );
         let ship_uniforms = Uniforms {
             model_matrix: ship_matrix,

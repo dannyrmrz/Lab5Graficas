@@ -18,8 +18,8 @@ mod triangle;
 mod vertex;
 
 use fragment_shaders::{
-    crimson_planet_shader, gas_giant_shader, moon_shader, ring_shader, rocky_planet_shader,
-    ship_shader, star_shader,
+    azure_planet_shader, crimson_planet_shader, gas_giant_shader, moon_shader, ring_shader,
+    rocky_planet_shader, ship_shader, star_shader,
 };
 use framebuffer::Framebuffer;
 use obj::Obj;
@@ -31,7 +31,7 @@ use vertex::Vertex;
 
 const WINDOW_WIDTH: usize = 1200;
 const WINDOW_HEIGHT: usize = 800;
-const FRAME_DELAY: Duration = Duration::from_millis(16);
+const FRAME_DELAY: Duration = Duration::from_millis(8);
 
 pub struct Uniforms {
     model_matrix: Mat4,
@@ -389,16 +389,16 @@ fn main() {
     });
 
     planets.push(Planet {
-        name: "Mercurion",
-        orbit_radius: 220.0,
-        orbit_speed: 0.7,
-        rotation_speed: 0.8,
-        scale: 52.0,
-        phase: 0.2,
-        orbit_color: 0x88AACC,
-        collision_radius: 70.0,
+        name: "Azura",
+        orbit_radius: 240.0,
+        orbit_speed: 0.62,
+        rotation_speed: 0.95,
+        scale: 60.0,
+        phase: 0.35,
+        orbit_color: 0x55D0FF,
+        collision_radius: 80.0,
         mesh: &rocky_mesh,
-        shader: rocky_planet_shader,
+        shader: azure_planet_shader,
         moon: None,
         ring: None,
     });
@@ -485,7 +485,7 @@ fn main() {
 
     let warp_bindings = [
         (Key::Key1, "Helios"),
-        (Key::Key2, "Mercurion"),
+        (Key::Key2, "Azura"),
         (Key::Key3, "Aurelia"),
         (Key::Key4, "Zephyrus"),
         (Key::Key5, "Pyra"),

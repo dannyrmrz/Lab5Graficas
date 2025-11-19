@@ -208,6 +208,56 @@ pub fn rocky_planet_shader(
     Color::from_float(final_color.x, final_color.y, final_color.z)
 }
 
+pub fn azure_planet_shader(
+    _v1: &Vertex,
+    _v2: &Vertex,
+    _v3: &Vertex,
+    position: Vec3,
+    normal: Vec3,
+    _tex_coords: Vec2,
+) -> Color {
+    let light_dir = Vec3::new(0.1, 0.2, -1.0).normalize();
+    let intensity = dot(&normal.normalize(), &light_dir).max(0.0);
+
+    let polar_noise = fbm(
+        Vec3::new(position.x * 4.0, position.y * 4.0, position.z * 4.0),
+        4,
+    );
+    let ocean_noise = fbm(
+        Vec3::new(position.x * 2.5, position.y * 2.5, position.z * 2.5),
+        3,
+    );
+
+    let ice_caps = ((position.y.abs() / position.magnitude()).powi(4) + polar_noise * 0.3)
+        .clamp(0.0, 1.0);
+    let ocean_mix = (ocean_noise * 1.2 - 0.2).clamp(0.0, 1.0);
+
+    let abyss = Vec3::new(0.02, 0.18, 0.4);
+    let lagoon = Vec3::new(0.18, 0.66, 0.96);
+    let aurora = Vec3::new(0.5, 0.9, 1.0);
+
+    let base_water = abyss * (1.0 - ocean_mix) + lagoon * ocean_mix;
+    let cloud_bands = fbm(
+        Vec3::new(position.x * 6.0, position.y * 6.0, position.z * 6.0),
+        5,
+    )
+        .powf(3.0);
+    let cloud_color = Vec3::new(0.85, 0.95, 1.0);
+    let mixed = base_water * (1.0 - cloud_bands) + cloud_color * cloud_bands;
+
+    let ice_color = aurora * (0.6 + ice_caps * 0.4);
+    let final_base = mixed * (1.0 - ice_caps) + ice_color * ice_caps;
+
+    let highlight = (normal.y * 0.5 + 0.5).powf(8.0) * 0.3;
+    let final_color = final_base * (intensity * 0.75 + 0.25) + Vec3::new(highlight, highlight, highlight * 0.8);
+
+    Color::from_float(
+        final_color.x.clamp(0.0, 1.0),
+        final_color.y.clamp(0.0, 1.0),
+        final_color.z.clamp(0.0, 1.0),
+    )
+}
+
 pub fn crimson_planet_shader(
     _v1: &Vertex,
     _v2: &Vertex,
@@ -425,22 +475,24 @@ pub fn ship_shader(
     let light_dir = Vec3::new(0.3, -0.8, -0.5).normalize();
     let intensity = dot(&normal.normalize(), &light_dir).max(0.0);
 
-    let hull_color = Vec3::new(0.75, 0.78, 0.85);
+    let base_gray = Vec3::new(0.58, 0.6, 0.63);
+    let dark_plate = Vec3::new(0.25, 0.27, 0.3);
     let panel_variation = fbm(
-        Vec3::new(position.x * 6.0, position.y * 6.0, position.z * 6.0),
-        2,
-    ) * 0.15;
-    let engine_glow = (position.y * 0.5).sin().abs() * 0.1;
+        Vec3::new(position.x * 7.0, position.y * 7.0, position.z * 7.0),
+        3,
+    )
+        .clamp(0.0, 1.0);
+    let panel_color = dark_plate * (1.0 - panel_variation) + base_gray * panel_variation;
 
-    let r = (hull_color.x + panel_variation).clamp(0.0, 1.0);
-    let g = (hull_color.y + panel_variation * 0.5).clamp(0.0, 1.0);
-    let b = (hull_color.z + engine_glow).clamp(0.0, 1.0);
+    let edge_highlight = (normal.y * 0.5 + 0.5).powf(6.0) * 0.25;
+    let engine_glow = (position.y * 0.4).sin().abs() * 0.05;
 
-    let specular = normal.normalize().z.powi(4).max(0.0) * 0.4;
+    let specular = normal.normalize().z.max(0.0).powi(6) * 0.5;
+    let lit = panel_color * (intensity * 0.65 + 0.35) + Vec3::new(edge_highlight, edge_highlight, edge_highlight);
     let final_color = Vec3::new(
-        (r * 0.6 + intensity * 0.4 + specular).clamp(0.0, 1.0),
-        (g * 0.6 + intensity * 0.3 + specular * 0.6).clamp(0.0, 1.0),
-        (b * 0.6 + intensity * 0.5 + specular * 0.2).clamp(0.0, 1.0),
+        (lit.x + specular + engine_glow).clamp(0.0, 1.0),
+        (lit.y + specular + engine_glow).clamp(0.0, 1.0),
+        (lit.z + specular + engine_glow).clamp(0.0, 1.0),
     );
 
     Color::from_float(final_color.x, final_color.y, final_color.z)
